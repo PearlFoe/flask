@@ -22,9 +22,9 @@ def not_found(error):
 def index():
     return render_template('login.html')
 
-@app.route('/user/<int:name>')
-def user(name):
-    return render_template('user.html', user=name)
+@app.route('/user/<name>&<int:number>')
+def user(name=None, number=3):
+    return render_template('user.html', user=name, number=number)
 
 @app.route('/api/tasks', methods=['GET'])
 def get_tasks():

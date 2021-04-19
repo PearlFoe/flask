@@ -1,0 +1,20 @@
+div {
+	position: relative;
+	left: 40%;
+	margin:10px;
+}
+
+input{
+	width: 200px;
+	margin:10px;
+}
+
+#username  {
+	text-align: center;
+	color: red;
+}
+
+#password {
+	text-align: center;
+	color: blue;
+}

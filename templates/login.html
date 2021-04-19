@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Title text</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='login.css') }}">
+    <title>Title text</title>
 </head>
 <body>
-	<input type="text" name="username">Username</input>
-	<input type="text" name="password">Password</input>
+	<div>
+		<input type="text" id="username">Username</input>
+	</div>
+	<div>
+		<input type="text" id="password">Password</input>
+	</div>
 </body>
 </html>
