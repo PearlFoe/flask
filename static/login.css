@@ -1,4 +1,8 @@
-div {
+body {
+	background-color: #d3d3d3;
+}
+
+div{
 	position: relative;
 	left: 40%;
 	margin:10px;
@@ -8,13 +12,17 @@ input{
 	width: 200px;
 	margin:10px;
 }
-
-#username  {
-	text-align: center;
-	color: red;
+button{
+	width: 175px;
+	margin-left: 32px;
 }
 
-#password {
+#username{
 	text-align: center;
-	color: blue;
+	color: #3c3c3c;
+}
+
+#password{
+	text-align: center;
+	color: #3c3c3c;
 }
