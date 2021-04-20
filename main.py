@@ -18,9 +18,19 @@ def not_found(error):
 
 ##############################################################################
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('login.html')
+    message = None
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        if username == 'root' and password == 'password':
+            message = "Loged in"
+        else:
+            message = "Incorrect login or password"
+
+    return render_template('login.html', message=message)
 
 @app.route('/user/<name>&<int:number>')
 def user(name=None, number=3):

@@ -5,14 +5,24 @@
     <title>Title text</title>
 </head>
 <body>
-	<div>
-		<input type="text" id="username">Username</input>
-	</div>
-	<div>
-		<input type="text" id="password">Password</input>
-	</div>
-	<div>
-		<button>Confurm</button>
+	<div class="input-block">
+		<div class="input-form">
+			<h1>Log In</h1>
+			{% if message %}
+        		<p>{{ message }}</p>
+    		{% endif %}
+			<form action="" method="post">
+				<p>
+					<input type="text" name="username" placeholder="Username">
+				</p>
+				<p>
+					<input type="password" name="password" placeholder="Password">
+				</p>
+				<p>
+					<input type="submit" value="Submit">
+				</p>
+			</form>
+		</div>
 	</div>
 </body>
 </html>
