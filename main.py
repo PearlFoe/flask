@@ -32,6 +32,29 @@ def index():
 
     return render_template('login.html', message=message)
 
+@app.route('/registration', methods=['GET', 'POST'])
+def register_new_user():
+    message = None
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        '''
+        добавиьт проверку на существование такого логина в 
+        базе данных
+        '''
+
+        '''
+        if username == 'root' and password == 'password':
+            message = "Loged in"
+        else:
+            message = "Incorrect login or password"
+        '''
+
+
+    return render_template('sign_up.html', message=message)
+
+
 @app.route('/user/<name>&<int:number>')
 def user(name=None, number=3):
     return render_template('user.html', user=name, number=number)
