@@ -1,11 +1,17 @@
 from flask import Flask, url_for, request, render_template, abort, jsonify, make_response
-from markupsafe import escape
+import pymysql
 
-import sqlite3
+import config
+
+db = pymysql.connect(host="localhost", 
+                        user=config.DB_LOGIN, 
+                        password=config.DB_PASSWORD, 
+                        database=config.DB_NAME,
+                        charset='utf8mb4',
+                        cursorclass=pymysql.cursors.DictCursor)  
 
 app = Flask(__name__)
 
-DB_NAME = 'db.db'
 ##############################################################################
 
 @app.errorhandler(404)
@@ -22,13 +28,24 @@ def not_found(error):
 def index():
     message = None
     if request.method == 'POST':
-        username = request.form.get('username')
+        login = request.form.get('login')
         password = request.form.get('password')
 
-        if username == 'root' and password == 'password':
-            message = "Loged in"
-        else:
-            message = "Incorrect login or password"
+        with db.cursor() as cursor:
+            db_request = "SELECT password FROM users WHERE login=%s"
+            cursor.execute(db_request, (login))
+            data = cursor.fetchone()
+
+            try:
+                user_password = data['password']
+            except KeyError:
+                message = "Incorrect login or password"
+            else:
+                if user_password != password:
+                    message = "Incorrect login or password"
+                else:
+                    message = "Logged in"
+
 
     return render_template('login.html', message=message)
 
@@ -37,35 +54,48 @@ def register_new_user():
     message = None
     if request.method == 'POST':
         username = request.form.get('username')
+        login = request.form.get('login')
         password = request.form.get('password')
 
-        '''
-        добавиьт проверку на существование такого логина в 
-        базе данных
-        '''
+        with db.cursor() as cursor:
+            db_request = "SELECT * FROM users WHERE login=%s"
+            cursor.execute(db_request, (login,))
+            data = cursor.fetchall()
 
-        '''
-        if username == 'root' and password == 'password':
-            message = "Loged in"
-        else:
-            message = "Incorrect login or password"
-        '''
+            if len(data) == 0:
+                db_request = "INSERT INTO users (name, is_admin, login, password) VALUES(%s, %s, %s, %s)"
+                cursor.execute(db_request, (username, False, login, password))
+                db.commit()
 
+                message = 'Registered sucessfuly'
+            else:
+                message = 'Such login already exists.\nPlease change login and try again'
 
     return render_template('sign_up.html', message=message)
 
 
-@app.route('/user/<name>&<int:number>')
-def user(name=None, number=3):
-    return render_template('user.html', user=name, number=number)
+@app.route('/user/<login>')
+def user(login=None):
+    with db.cursor() as cursor:
+        db_request = "SELECT id FROM users WHERE login=%s"
+        cursor.execute(db_request, (login,))
+        try:
+            user_id = cursor.fetchone()['id']
+        except TypeError:
+            abort(404)
+        else:
+            db_request = "SELECT * FROM tasks WHERE user_id=%s"
+            cursor.execute(db_request, (user_id,))
+            data = cursor.fetchall()
+
+            return render_template('user.html', user=login, tasks=data, length=len(data))
 
 @app.route('/api/tasks', methods=['GET'])
 def get_tasks():
-    with sqlite3.connect(DB_NAME) as conn:
-        cursor = conn.cursor()
-
+    with db.cursor() as cursor:
         db_request = "SELECT * FROM tasks"
-        data = cursor.execute(db_request).fetchall()
+        cursor.execute(db_request)
+        data = cursor.fetchall()
         tasks = []
         for item in data:
             task = {'name': item[1], 
@@ -78,11 +108,10 @@ def get_tasks():
 
 @app.route('/api/tasks/<int:task_id>', methods=['GET'])
 def get_task_by_id(task_id):
-    with sqlite3.connect(DB_NAME) as conn:
-        cursor = conn.cursor()
-
-        db_request = "SELECT * FROM tasks WHERE id = ?"
-        data = cursor.execute(db_request, (task_id,)).fetchone()
+    with db.cursor() as cursor:
+        db_request = "SELECT * FROM tasks WHERE id = %d"
+        cursor.execute(db_request, (task_id,))
+        data = cursor.fetchone()
 
         if len(data) == 0:
             abort(404)
@@ -95,15 +124,13 @@ def get_task_by_id(task_id):
 
 @app.route('/api/tasks', methods=['POST'])
 def create_task():
-    with sqlite3.connect(DB_NAME) as conn:
-        cursor = conn.cursor()
-
+    with db.cursor() as cursor:
         if not request.json or not 'name' in request.json:
             abort(400)
 
-        db_request = "INSERT INTO 'tasks' ('name', 'description') VALUES (?,?)"
+        db_request = "INSERT INTO tasks (name, description) VALUES (%s,%s)"
         cursor.execute(db_request, (request.json['name'], request.json['description']))
-        conn.commit()
+        db.commit()
         
         max_id = cursor.execute("SELECT count(*) FROM tasks").fetchone()[0]
 
@@ -117,19 +144,21 @@ def create_task():
 
 @app.route('/api/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
-    with sqlite3.connect(DB_NAME) as conn:
-        cursor = conn.cursor()
+    with db.cursor() as cursor:
+        cursor.execute("SELECT count(*) FROM tasks")
+        max_id = cursor.fetchone()[0]# должно вернуть количество записей, посмотреть в каком виде
 
-        max_id = cursor.execute("SELECT count(*) FROM tasks").fetchone()[0]
         if task_id > max_id:
             abort(400)
         
-        db_request = "DELETE FROM tasks WHERE id = ?"
+        db_request = "DELETE FROM tasks WHERE id = %d"
         cursor.execute(db_request, (task_id,))
-        conn.commit()
+        db.commit()
 
         db_request = "SELECT * FROM tasks"
-        data = cursor.execute(db_request).fetchall()
+        cursor.execute(db_request)
+        data = cursor.fetchone()
+
         tasks = []
         for item in data:
             task = {'name': item[1], 
@@ -142,14 +171,13 @@ def delete_task(task_id):
 
 @app.route('/api/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):   
-    with sqlite3.connect(DB_NAME) as conn:
-        cursor = conn.cursor()
+    with db.cursor() as cursor:
+        db_request = "UPDATE tasks SET name = %s, description = %s WHERE id = %d"
+        cursor.execute(db_request, (request.json['name'], request.json['description'], task_id))
+        db.commit()
 
-        db_request = "UPDATE tasks SET name = ?, description = ?, corrected = ? WHERE id = ?"
-        cursor.execute(db_request, (request.json['name'], request.json['description'], True, task_id))
-        conn.commit()
-
-        max_id = cursor.execute("SELECT count(*) FROM tasks").fetchone()[0]
+        cursor.execute("SELECT count(*) FROM tasks")
+        max_id = cursor.fetchone()[0]
 
         if task_id > max_id:
             abort(400)

@@ -5,9 +5,13 @@
 </head>
 <body>
 	<h2>{{user}}</h2>
+	<p>Tasks count: {{length}}</p>
     <div>
-    	{% for i in range(number) %}
-    		<div>{{i}}</div>
+    	{% for i in tasks %}
+    		<div>
+    			<h2>{{i.name}}</h2>
+    			<p>{{i.description}}</p>
+    		</div>
     	{% endfor %}
     </div>
 </body>
