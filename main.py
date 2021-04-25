@@ -1,4 +1,5 @@
-from flask import Flask, url_for, request, render_template, abort, jsonify, make_response
+from flask import Flask, url_for, request, redirect, render_template, abort, jsonify, make_response
+from werkzeug.security import generate_password_hash,  check_password_hash
 import pymysql
 
 import config
@@ -32,19 +33,20 @@ def index():
         password = request.form.get('password')
 
         with db.cursor() as cursor:
-            db_request = "SELECT password FROM users WHERE login=%s"
+            db_request = "SELECT hash_password FROM users WHERE login=%s"
             cursor.execute(db_request, (login))
             data = cursor.fetchone()
 
             try:
-                user_password = data['password']
+                user_password = data['hash_password']
             except KeyError:
                 message = "Incorrect login or password"
             else:
-                if user_password != password:
+                if not check_password_hash(user_password, password):
                     message = "Incorrect login or password"
                 else:
-                    message = "Logged in"
+                    #message = "Logged in"
+                    return redirect(url_for('user', login=login))
 
 
     return render_template('login.html', message=message)
@@ -63,16 +65,19 @@ def register_new_user():
             data = cursor.fetchall()
 
             if len(data) == 0:
-                db_request = "INSERT INTO users (name, is_admin, login, password) VALUES(%s, %s, %s, %s)"
-                cursor.execute(db_request, (username, False, login, password))
-                db.commit()
+                if (len(username) > 1) and (len(login) > 6) and (len(password) > 6):
+                    db_request = "INSERT INTO users (name, is_admin, login, hash_password) VALUES(%s, %s, %s, %s)"
+                    cursor.execute(db_request, (username, False, login, generate_password_hash(password)))
+                    db.commit()
 
-                message = 'Registered sucessfuly'
+                    #message = 'Registered sucessfuly'
+                    return redirect(url_for('user', login=login))
+                else:
+                    message = 'Incorrect data length'
             else:
                 message = 'Such login already exists.\nPlease change login and try again'
 
     return render_template('sign_up.html', message=message)
-
 
 @app.route('/user/<login>')
 def user(login=None):

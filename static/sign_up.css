@@ -6,6 +6,8 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	padding-top: 80px;
+	padding-bottom: 40px;
 }
 
 .input-form{
@@ -13,6 +15,7 @@ body {
 	width: 250px;
 	height: 100%;
 	background-color: #b4b4b4;
+	border-radius: .25rem;
 }
 
 h1 {
