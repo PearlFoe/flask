@@ -1,8 +1,13 @@
-from flask import Flask, url_for, request, redirect, render_template, abort, jsonify, make_response
+from flask import (Flask, url_for, request, redirect, render_template,
+                    abort, jsonify, make_response, session)
 from werkzeug.security import generate_password_hash,  check_password_hash
 import pymysql
+import datetime
+import os
 
 import config
+import utils
+
 
 db = pymysql.connect(host="localhost", 
                         user=config.DB_LOGIN, 
@@ -12,6 +17,8 @@ db = pymysql.connect(host="localhost",
                         cursorclass=pymysql.cursors.DictCursor)  
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.urandom(20).hex()
+app.permanent_session_lifetime = datetime.timedelta(days=1)
 
 ##############################################################################
 
@@ -27,13 +34,38 @@ def not_found(error):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    if 'session_id' in session:
+        with db.cursor() as cursor:
+            db_request = "SELECT user_id FROM cookies WHERE session_id=%s"
+            cursor.execute(db_request, (session['session_id']))
+            user_id = cursor.fetchone()
+
+            if user_id:
+                db_request = "SELECT login FROM users WHERE id=%s"
+                cursor.execute(db_request, user_id['user_id'])
+                login = cursor.fetchone()
+                if login:
+                    new_key = utils.generate_key(30)
+                    session['session_id'] = new_key
+                    session.modified = True
+
+                    db_request = "UPDATE cookies SET session_id=%s WHERE user_id=%s"
+                    cursor.execute(db_request, (new_key, user_id['user_id']))
+                    db.commit()
+
+                    return redirect(url_for('user', login=login['login']))
+
     message = None
     if request.method == 'POST':
         login = request.form.get('login')
         password = request.form.get('password')
 
+        if not password or not login:
+            message = "Incorrect login or password"
+            return render_template('login.html', message=message)
+
         with db.cursor() as cursor:
-            db_request = "SELECT hash_password FROM users WHERE login=%s"
+            db_request = "SELECT id, hash_password FROM users WHERE login=%s"
             cursor.execute(db_request, (login))
             data = cursor.fetchone()
 
@@ -45,9 +77,23 @@ def index():
                 if not check_password_hash(user_password, password):
                     message = "Incorrect login or password"
                 else:
-                    #message = "Logged in"
-                    return redirect(url_for('user', login=login))
+                    db_request = "SELECT session_id FROM cookies WHERE user_id=%s"
+                    cursor.execute(db_request, data['id'])
+                    session_id = cursor.fetchone()
 
+                    new_key = utils.generate_key(30)
+                    session['session_id'] = new_key
+
+                    if not session_id:
+                        db_request = "INSERT INTO cookies (session_id, user_id) VALUES (%s, %s)"
+                        cursor.execute(db_request, (new_key, data['id']))
+                        db.commit()
+                    else:
+                        db_request = "UPDATE cookies SET session_id=%s WHERE user_id=%s"
+                        cursor.execute(db_request, (new_key, data['id']))
+                        db.commit()
+
+                    return redirect(url_for('user', login=login))
 
     return render_template('login.html', message=message)
 
