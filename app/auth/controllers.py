@@ -1,18 +1,22 @@
 from flask import (
-    Blueprint,
-    request,
-    flash,
-    abort,
-    redirect,
-    url_for,
-    current_app,
+	Blueprint,
+	request,
+	flash,
+	abort,
+	redirect,
+	url_for,
+	current_app,
+	session
 )
 from sqlalchemy.exc import SQLAlchemyError
-
 from app.database import db
 
-module = Blueprint('comment', __name__, url_prefix='/comment')
+module = Blueprint('auth', __name__)
 
-@module.route('/', methods=['GET'])
-def index():
-    return 'test message'
+@module.route('/', methods=['GET', 'POST'])
+def login():
+	return 'test message'
+
+@module.route('/registration', methods=['GET', 'POST'])
+def register():
+	pass
