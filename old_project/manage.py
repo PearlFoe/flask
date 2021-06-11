@@ -7,12 +7,12 @@ from app.database import db
 
 app = create_app()
 app.config.from_object(os.environ['APP_SETTINGS'])
-
-#manager = Manager(app)
+'''
+manager = Manager(app)
 migrate = Migrate(app, db)
 
-#manager.add_command('db', MigrateCommand)
-
+manager.add_command('db', MigrateCommand)
+'''
 
 if __name__ == '__main__':
     manager.run()

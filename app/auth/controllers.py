@@ -10,6 +10,7 @@ from flask import (
 )
 from sqlalchemy.exc import SQLAlchemyError
 from app.database import db
+from .models import User
 
 module = Blueprint('auth', __name__)
 
