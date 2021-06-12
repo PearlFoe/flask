@@ -10,6 +10,7 @@ app.config.from_object(os.environ['APP_SETTINGS'])
 
 manager = Manager(app)
 
+#python manage.py runserver
 
 if __name__ == '__main__':
 	manager.run()
