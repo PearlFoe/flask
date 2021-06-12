@@ -7,7 +7,7 @@ class User(db.Model):
 	name = db.Column(db.String(45), nullable=False)
 	is_admin = db.Column(db.Boolean, default=False, nullable=False)
 	login = db.Column(db.String(45), nullable=False)
-	password = db.Column(db.String(80), nullable=False)
+	password = db.Column(db.String(100), nullable=False)
 	api_key = db.Column(db.String(80))
 
 	def __str__(self):
@@ -16,7 +16,7 @@ class User(db.Model):
 class Session(db.Model):
 	__tablename__ = 'session'
 
-	user_id = db.Column(db.Integer, ForeignKey=User.id, primary_key=True)
+	user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=True)
 	session_id = db.Column(db.Integer)
 
 	def __str__(self):
