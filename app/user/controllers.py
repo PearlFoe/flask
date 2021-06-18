@@ -11,6 +11,7 @@ from flask import (
 from app.database import db
 from app.auth.models import User, Session
 from .models import Tasks
+from .forms import InputTaskForm
 
 module = Blueprint('user', __name__, url_prefix='/user/')
 
@@ -25,3 +26,11 @@ def user(user_id=None):
 			return render_template('user/user.html', user=login, tasks=data, length=len(data))
 		
 	return redirect(url_for('auth.login'))
+
+@module.route('/<user_id>/<task_id>', , methods=['GET', 'POST'])
+def edit_task(user_id=None, task_id=None):
+	login = None
+	data = None
+	form = InputTaskForm()
+
+	return render_template('user/task.html', form=form, user=login, task=data)

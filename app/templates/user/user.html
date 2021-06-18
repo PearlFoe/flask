@@ -25,3 +25,42 @@
 	</div>
 </body>
 </html>
+
+{% extends 'bootstrap/base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block navbar %}
+	<div class="info">
+		<p class="name">{{user}}</p>
+		<p>Tasks count: {{length}}</p>
+	</div>
+{% endblock %}
+
+{% block styles %}
+	{{super()}}
+	<link rel="stylesheet"
+		href="{{url_for('static', filename='user/user.css')}}">
+{% endblock %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			{% if length %}
+				{% for i in tasks %}
+					<div class="column">
+						<div class="task">
+							<h2 class="task-name">{{i.name}}</h2>
+							<p class="task-description">{{i.description}}</p>
+						</div>
+					</div>
+				{% endfor %}
+			{% else %}
+				<div class="column">
+					<div class="empty-task">
+						<p>Create new task</p>
+					</div>
+				</div>
+			{% endif %}
+		</div>
+	</div>
+{% endblock %}

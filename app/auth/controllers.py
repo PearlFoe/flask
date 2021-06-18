@@ -14,6 +14,7 @@ from werkzeug.security import (
 
 from app.database import db
 from .models import User, Session
+from .forms import LoginForm, RegisterForm
 
 import app.utils as utils
 
@@ -21,6 +22,9 @@ module = Blueprint('auth', __name__)
 
 @module.route('/', methods=['GET', 'POST'])
 def login():
+	form = LoginForm()
+	message = None
+
 	if 'session_id' in session:
 		session_exists = db.session.query(db.exists().where(Session.session_id==session['session_id'])).scalar()
 		if session_exists:
@@ -40,14 +44,9 @@ def login():
 
 			return redirect(url_for('user.user', user_id=session_data.user_id))
 
-	message = None
-	if request.method == 'POST':
-		login = request.form.get('login')
-		password = request.form.get('password')
-
-		if not password or not login:
-			message = "Incorrect login or password"
-			return render_template('auth/login.html', message=message)
+	if form.validate_on_submit():	
+		login = form.login.data
+		password = form.password.data
 
 		user_data = db.session.query(User).filter(User.login == login).first()
 		if not user_data:
@@ -90,15 +89,16 @@ def login():
 
 		return redirect(url_for('user.user', user_id=user_data.id))
 
-	return render_template('auth/login.html', message=message)
+	return render_template('auth/login.html', message=message, form=form)
 
 @module.route('/registration', methods=['GET', 'POST'])
 def register():
+	form = RegisterForm()
 	message = None
-	if request.method == 'POST':
-		username = request.form.get('username')
-		login = request.form.get('login')
-		password = request.form.get('password')
+	if form.validate_on_submit():	
+		username = form.username.data
+		login = form.login.data
+		password = form.password.data
 
 		user_exists = db.session.query(User).filter(User.login == login).first()
 		if not user_exists:
@@ -118,4 +118,4 @@ def register():
 		else:
 			message = 'Such login already exists.\nPlease change login and try again'
 
-	return render_template('auth/sign_up.html', message=message)
+	return render_template('auth/sign_up.html', message=message, form=form)
