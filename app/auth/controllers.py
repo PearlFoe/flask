@@ -102,19 +102,17 @@ def register():
 
 		user_exists = db.session.query(User).filter(User.login == login).first()
 		if not user_exists:
-			if (len(username) > 1) and (len(login) > 6) and (len(password) > 6):
-				new_user = User(
-					name=username,
-					is_admin=0,
-					login=login,
-					password=generate_password_hash(password)
-					)
-				db.session.add(new_user) 
-				db.session.commit()
+			new_user = User(
+				name=username,
+				login=login,
+				password=generate_password_hash(password)
+			)
+			db.session.add(new_user) 
+			db.session.commit()
 
-				return redirect(url_for('user', user_id=user_id))
-			else:
-				message = 'Incorrect data length'
+			user_data = db.session.query(User).filter(User.login == login).first()
+
+			return redirect(url_for('user', user_id=user_data.id))
 		else:
 			message = 'Such login already exists.\nPlease change login and try again'
 

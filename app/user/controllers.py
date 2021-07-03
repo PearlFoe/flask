@@ -27,7 +27,7 @@ def user(user_id=None):
 		
 	return redirect(url_for('auth.login'))
 
-@module.route('/<user_id>/<task_id>', , methods=['GET', 'POST'])
+@module.route('/<user_id>/<task_id>', methods=['GET', 'POST'])
 def edit_task(user_id=None, task_id=None):
 	login = None
 	data = None

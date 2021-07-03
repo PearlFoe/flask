@@ -5,7 +5,6 @@ class User(db.Model):
 
 	id = db.Column(db.Integer, primary_key=True, nullable=False)
 	name = db.Column(db.String(45), nullable=False)
-	is_admin = db.Column(db.Boolean, default=False, nullable=False)
 	login = db.Column(db.String(45), nullable=False)
 	password = db.Column(db.String(100), nullable=False)
 	api_key = db.Column(db.String(80))
