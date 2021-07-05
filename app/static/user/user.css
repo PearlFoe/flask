@@ -1,18 +1,26 @@
 body{
 	margin: 0;
 }
-.info{
-	display: flex;
+
+.nav-bar{
 	background-color: #212529;
 }
 
-div.info>p{
-	display: inline;
+.info>p{
 	height: 30px;
 	vertical-align:middle;
-	margin: 10px;
+	margin: 15px;
 	font-size: 18px;
 	color: #ffff;
+	border-right: 1px solid #bbb;
+}
+
+.logout-btn:{
+	float: right;
+	border: 1px;
+	border-radius: .25rem;
+	border-style: solid;
+	border-color: #bbb;
 }
 
 p.name{
@@ -29,7 +37,6 @@ p.name{
 	display: flex;
 	flex-wrap: wrap;
 	max-width: 850px;
-
 }
 
 .column{
@@ -46,6 +53,11 @@ p.name{
 }
 
 .task{
+	display: flex;
+	flex-direction: column;
+}
+
+.empty-task{
 	display: flex;
 	flex-direction: column;
 }

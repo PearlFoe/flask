@@ -1,6 +1,18 @@
+from werkzeug.security import (
+	generate_password_hash,
+	check_password_hash
+)
+from flask_login import (
+	LoginManager, 
+	UserMixin, 
+	login_required
+)
+
+from app import login_manager
 from app.database import db
 
-class User(db.Model):
+
+class User(db.Model, UserMixin):
 	__tablename__ = 'users'
 
 	id = db.Column(db.Integer, primary_key=True, nullable=False)
@@ -12,11 +24,12 @@ class User(db.Model):
 	def __str__(self):
 		return self.name
 
-class Session(db.Model):
-	__tablename__ = 'session'
+	def set_password(password):
+		return generate_password_hash(password)
 
-	user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=True)
-	session_id = db.Column(db.Integer)
+	def check_password(self, password):
+		return check_password_hash(self.password, password)
 
-	def __str__(self):
-		return self.session_id
+@login_manager.user_loader
+def load_user(id):
+    return User.query.get(int(id))

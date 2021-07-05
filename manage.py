@@ -13,6 +13,7 @@ manager = Manager(app)
 bootstrap = Bootstrap(app)
 
 #python manage.py runserver
+#'mysql+pymysql://root:pass@localhost/my_db'
 
 if __name__ == '__main__':
 	manager.run()

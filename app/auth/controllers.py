@@ -7,16 +7,11 @@ from flask import (
 	session,
 	render_template,
 )
-from werkzeug.security import (
-	generate_password_hash,
-	check_password_hash
-)
+from flask_login import current_user, login_user, logout_user
 
 from app.database import db
-from .models import User, Session
+from .models import User
 from .forms import LoginForm, RegisterForm
-
-import app.utils as utils
 
 module = Blueprint('auth', __name__)
 
@@ -25,71 +20,27 @@ def login():
 	form = LoginForm()
 	message = None
 
-	if 'session_id' in session:
-		session_exists = db.session.query(db.exists().where(Session.session_id==session['session_id'])).scalar()
-		if session_exists:
-			session_data = db.session.\
-				query(Session).\
-				filter(Session.session_id == session['session_id']).\
-				first()
-
-			new_session_id = utils.generate_key(30)
-			session_data.session_id = new_session_id
-
-			db.session.add(session_data) 
-			db.session.commit()
-
-			session['session_id'] = new_session_id
-			session.modified = True
-
-			return redirect(url_for('user.user', user_id=session_data.user_id))
+	if current_user.is_authenticated:
+		return redirect(url_for('user.user', user_id=current_user.id))
 
 	if form.validate_on_submit():	
 		login = form.login.data
 		password = form.password.data
 
-		user_data = db.session.query(User).filter(User.login == login).first()
-		if not user_data:
+		user = db.session.query(User).filter(User.login == login).first()
+		if not user or not user.check_password(password):
 			message = "Incorrect login or password"
 			return render_template('auth/login.html', message=message)
 
-		user_password = user_data.password
-		if not check_password_hash(user_password, password):
-			message = "Incorrect login or password"
-			return render_template('auth/login.html', message=message)
-
-		session_exists = db.session.query(db.exists().where(Session.user_id==user_data.id)).scalar()
-		if session_exists:
-			session_data = db.session.\
-							query(Session).\
-							filter(Session.user_id == user_data.id).\
-							first()
-
-			user_id = session_data.user_id
-			new_session_id = utils.generate_key(30)
-
-			session_data.session_id = new_session_id
-			db.session.add(session_data) 
-			db.session.commit()
-
-			session['session_id'] = new_session_id
-			session.modified = True
-		else:
-			new_session_id = utils.generate_key(30)
-			session_data = Session(
-				user_id=user_data.id, 
-				session_id=utils.new_session_id
-				)
-
-			db.session.add(session_data) 
-			db.session.commit()
-
-			session['session_id'] = new_session_id
-			session.modified = True
-
-		return redirect(url_for('user.user', user_id=user_data.id))
+		login_user(user)
+		return redirect(url_for('user.user', user_id=user.id))
 
 	return render_template('auth/login.html', message=message, form=form)
+
+@module.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('auth.login'))
 
 @module.route('/registration', methods=['GET', 'POST'])
 def register():
@@ -100,19 +51,18 @@ def register():
 		login = form.login.data
 		password = form.password.data
 
-		user_exists = db.session.query(User).filter(User.login == login).first()
-		if not user_exists:
-			new_user = User(
+		user = db.session.query(User).filter(User.login == login).first()
+		if not user:
+			user = User(
 				name=username,
 				login=login,
-				password=generate_password_hash(password)
+				password=User.set_password(password)
 			)
-			db.session.add(new_user) 
+			db.session.add(user) 
 			db.session.commit()
 
-			user_data = db.session.query(User).filter(User.login == login).first()
-
-			return redirect(url_for('user', user_id=user_data.id))
+			login_user(user)
+			return redirect(url_for('user.user', user_id=user.id))
 		else:
 			message = 'Such login already exists.\nPlease change login and try again'
 
