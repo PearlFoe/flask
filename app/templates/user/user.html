@@ -3,11 +3,9 @@
 
 {% block navbar %}
 	<div class="nav-bar">
-		<div class="info">
-			<p class="name">{{user}}</p>
-			<p>Tasks count: {{length}}</p>
-			<p class="logout-btn"><a href="/logout">Log out</a></p>
-		</div>
+		<div class="name"><p>{{ user }}</p></div>
+		<div class="task-count"><p>Tasks count: {{ length }}</p></div>
+		<div class="logout-btn"><a href="/logout">Log out</a></div>
 	</div>
 {% endblock %}
 
@@ -29,6 +27,11 @@
 						</div>
 					</div>
 				{% endfor %}
+				<div class="column">
+					<div class="empty-task">
+						<p>Create new task</p>
+					</div>
+				</div>
 			{% else %}
 				<div class="column">
 					<div class="empty-task">

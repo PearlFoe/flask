@@ -1,0 +1,55 @@
+body{
+	margin: 0;
+}
+
+.nav-bar{
+	background-color: #212529;
+	list-style-type: none;
+}
+
+.nav-bar>div{
+	display: inline-block;
+	border-right: 1px solid #bbb;
+	height: 55px;
+}
+
+.logout-btn{
+	float: right;
+
+}
+
+p{
+	height: 30px;
+	vertical-align:middle;
+	margin: 15px;
+	font-size: 18px;
+	color: #ffff;
+}
+
+a{
+	display: block;
+	text-align: center;
+	margin: 6px;
+	padding: 7px;
+	vertical-align:middle;
+	font-size: 18px;
+	color: #ffff;
+	border: 1px solid #939393;
+	border-radius: 2px;
+}
+
+.form-group {
+	padding: 10px;
+	margin: auto;
+	width: 850px;
+}
+
+#task_description{
+	height: 250px;
+	text-align: top;
+}
+
+#submit_btn{
+	float: right;
+	margin: 20px;
+}

@@ -1,7 +1,7 @@
 from app.database import db
 from app.auth.models import User
 
-class Tasks(db.Model):
+class Task(db.Model):
 	__tablename__ = 'tasks'
 
 	id = db.Column(db.Integer, primary_key=True)
