@@ -69,5 +69,14 @@ a{
 }
 
 .empty-task{
+	display: table;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.empty-task>p{
+	border:  none;
+	display: table-cell;
+	vertical-align: middle;
 	text-align: center;
 }

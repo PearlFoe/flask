@@ -16,29 +16,26 @@ from .forms import InputTaskForm
 
 module = Blueprint('user', __name__, url_prefix='/user/')
 
-@module.route('/<user_id>', methods=['GET'])
+@module.route('/<user_id>/', methods=['GET'])
 @login_required
 def user(user_id=None):
 	data = db.session.query(Task).filter(Task.user_id == user_id).all()
 	login = db.session.query(User).filter(User.id == user_id).first().login
 
-	return render_template('user/user.html', user=login, Task=data, length=len(data))
-		
-	#return redirect(url_for('auth.login'))
+	return render_template('user/user.html', user=login, task=data, length=len(data))
 
-@module.route('/<user_id>/<task_id>', methods=['GET', 'POST'])
+@module.route('/<user_id>/<task_id>/', methods=['GET', 'POST'])
 @login_required
 def edit_task(user_id=None, task_id=None):
 	user = db.session.query(User).filter(User.id == user_id).first()
-	form = InputTaskForm()
 	task = None
 
-	if not db.session.query(exists().where(Task.id==task_id)).scalar():
+	if not db.session.query(db.exists().where(Task.id==task_id)).scalar():
 		return 404
 	else:
 		task = db.session.query(Task).filter(Task.user_id == user_id).first()
 
-
+	form = InputTaskForm()
 	if form.validate_on_submit():
 		if task_id:
 			task.name = form.task_name.data
@@ -52,11 +49,11 @@ def edit_task(user_id=None, task_id=None):
 
 		db.session.add(task)
 		db.session.commit()
-
+		return redirect(url_for('user.user', user_id=user.id))
 
 	return render_template('user/task.html', form=form, user=user.login, task=task)
 
-@module.route('/<user_id>/new', methods=['GET', 'POST'])
+@module.route('/<user_id>/new/', methods=['GET', 'POST'])
 @login_required
 def create_task(user_id=None):
 	user = db.session.query(User).filter(User.id == user_id).first()

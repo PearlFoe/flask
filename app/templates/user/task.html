@@ -1,6 +1,7 @@
 {% extends 'bootstrap/base.html' %}
 {% import 'bootstrap/wtf.html' as wtf %}
 
+
 {% block navbar %}
 	<div class="nav-bar">
 		<div class="name"><p>{{ user }}</p></div>
@@ -15,5 +16,8 @@
 {% endblock %}
 
 {% block content %}
+	{% set t = form.task_name.process_data(task.name) %}
+	{% set d = form.task_description.process_data(task.description) %}
+
 	{{ wtf.quick_form(form) }}
 {% endblock %}

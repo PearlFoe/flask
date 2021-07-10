@@ -19,26 +19,20 @@
 	<div class="container">
 		<div class="row">
 			{% if length %}
-				{% for i in tasks %}
-					<div class="column">
+				{% for i in task %}
+					<div class="column" role="button" onclick="location.href='{{ i.id }}'">
 						<div class="task">
 							<h2 class="task-name">{{i.name}}</h2>
 							<p class="task-description">{{i.description}}</p>
 						</div>
 					</div>
 				{% endfor %}
-				<div class="column">
-					<div class="empty-task">
-						<p>Create new task</p>
-					</div>
-				</div>
-			{% else %}
-				<div class="column">
-					<div class="empty-task">
-						<p>Create new task</p>
-					</div>
-				</div>
 			{% endif %}
+			<div class="column" role="button" onclick="location.href='new'">
+				<div class="empty-task">
+					<p href="new">Create new task</p>
+				</div>
+			</div>
 		</div>
 	</div>
 {% endblock %}
